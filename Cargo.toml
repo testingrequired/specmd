@@ -4,3 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+markdown = "1.0.0-alpha.21"
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
+textwrap = "0.16"
+rstest = "0.19.0"
