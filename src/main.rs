@@ -1,4 +1,4 @@
-use clap::Command;
+use clap::{Command, crate_version};
 use std::ffi::OsString;
 use std::io::ErrorKind;
 use std::process::{self, Command as Cmd};
@@ -6,6 +6,7 @@ use std::process::{self, Command as Cmd};
 fn main() {
     let mut cli = Command::new("specmd")
         .about("Markdown for testing CLI commands")
+        .version(crate_version!())
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true);
@@ -15,7 +16,6 @@ fn main() {
         .subcommand()
         .expect("subcommand_required guarantees a subcommand");
 
-    // External subcommand args live under the empty-string id
     let args: Vec<OsString> = sub_matches
         .get_many::<OsString>("")
         .map(|vals| vals.cloned().collect())
