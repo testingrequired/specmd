@@ -37,6 +37,14 @@ You can then test it:
 specmd test hello.spec.md
 ```
 
+## Run All Tests
+
+All the specmd test files using:
+
+```sh
+specmd test examples/*.spec.md
+```
+
 ## How Does It Work?
 
 Code blocks define the important parts of the test.
