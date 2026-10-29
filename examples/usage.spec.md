@@ -7,7 +7,7 @@ specmd
 ```
 
 ```stderr
-Markdown for testing CLI commands
+CLI tests using markdown
 
 Usage: specmd <COMMAND>
 

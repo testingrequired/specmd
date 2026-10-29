@@ -2,7 +2,7 @@ use clap::Parser;
 use console::{StyledObject, style};
 use similar::{Algorithm, ChangeTag, TextDiff};
 use specmd::prelude::{SpecMdResult, parse};
-use std::process::{Command, exit};
+use std::process::Command;
 
 #[derive(Parser)]
 #[command(version, about, long_about = Some("Run a command and output a specmd file"))]
@@ -10,7 +10,7 @@ struct Cli {
     #[arg(short, long)]
     shell: Option<String>,
 
-    path: String,
+    path: Vec<String>,
 }
 
 fn main() -> SpecMdResult<()> {
@@ -18,96 +18,99 @@ fn main() -> SpecMdResult<()> {
 
     let cli = Cli::parse();
     let shell = cli.shell.unwrap_or(String::from("/bin/sh"));
-    let content = std::fs::read_to_string(&cli.path).expect("should open file path passed");
 
-    let specmd_file = parse(&content)?;
+    for path in cli.path.iter() {
+        let content = std::fs::read_to_string(path).expect("should open file path passed");
 
-    let cmd = &content[specmd_file.shell];
-    let expected_stdout = &content[specmd_file.stdout];
-    let expected_stderr = &content[specmd_file.stderr];
-    let expected_exit = &content[specmd_file.exit];
-    let expected_exit_code = i32::from_str_radix(expected_exit, 10).expect("should parse as i32");
+        let specmd_file = parse(&content)?;
 
-    eprintln!("{}\n\n{}\n", style(cli.path).underlined(), style(cmd).dim());
+        let cmd = &content[specmd_file.shell];
+        let expected_stdout = &content[specmd_file.stdout];
+        let expected_stderr = &content[specmd_file.stderr];
+        let expected_exit = &content[specmd_file.exit];
+        let expected_exit_code =
+            i32::from_str_radix(expected_exit, 10).expect("should parse as i32");
 
-    let mut vars: Vec<(String, String)> = vec![];
+        eprintln!("{}\n\n{}\n", style(path).underlined(), style(cmd).dim());
 
-    if let Some(env) = specmd_file.env {
-        let env_text = &content[env];
+        let mut vars: Vec<(String, String)> = vec![];
 
-        vars = dotenvy::from_read_iter(env_text.as_bytes())
-            .collect::<Result<_, _>>()
-            .unwrap();
-    }
+        if let Some(env) = specmd_file.env {
+            let env_text = &content[env];
 
-    match Command::new(&shell)
-        .args(vec!["-c", &format!("{cmd}")])
-        .envs(vars)
-        .output()
-    {
-        Ok(output) => {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            let code = output.status.code().unwrap_or(1);
+            vars = dotenvy::from_read_iter(env_text.as_bytes())
+                .collect::<Result<_, _>>()
+                .unwrap();
+        }
 
-            if expected_stdout != stdout {
-                println!("{}\n", style("Mismatch: stdout").bold());
+        match Command::new(&shell)
+            .args(vec!["-c", &format!("{cmd}")])
+            .envs(vars)
+            .output()
+        {
+            Ok(output) => {
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                let code = output.status.code().unwrap_or(1);
 
-                let diff = TextDiff::configure()
-                    .algorithm(diff_algorithm)
-                    .diff_lines(expected_stdout, stdout);
+                if expected_stdout != stdout {
+                    println!("{}\n", style("Mismatch: stdout").bold());
 
-                for change in diff.iter_all_changes() {
-                    let (sign, style_fn): (&str, Box<dyn Fn(&str) -> StyledObject<&str>>) =
-                        match change.tag() {
-                            ChangeTag::Delete => ("- |", Box::new(|s: &str| style(s).red())),
-                            ChangeTag::Insert => ("+ |", Box::new(|s: &str| style(s).green())),
-                            ChangeTag::Equal => (
-                                &style("  |").dim().to_string(),
-                                Box::new(|s: &str| style(s)),
-                            ),
-                        };
+                    let diff = TextDiff::configure()
+                        .algorithm(diff_algorithm)
+                        .diff_lines(expected_stdout, stdout);
 
-                    print!("{}{}", style_fn(sign), style_fn(change.value_ref()));
+                    for change in diff.iter_all_changes() {
+                        let (sign, style_fn): (&str, Box<dyn Fn(&str) -> StyledObject<&str>>) =
+                            match change.tag() {
+                                ChangeTag::Delete => ("- |", Box::new(|s: &str| style(s).red())),
+                                ChangeTag::Insert => ("+ |", Box::new(|s: &str| style(s).green())),
+                                ChangeTag::Equal => (
+                                    &style("  |").dim().to_string(),
+                                    Box::new(|s: &str| style(s)),
+                                ),
+                            };
+
+                        print!("{}{}", style_fn(sign), style_fn(change.value_ref()));
+                    }
+
+                    println!("");
                 }
 
-                println!("");
-            }
+                if expected_stderr != stderr {
+                    println!("{}\n", style("Mismatch: stderr").bold());
 
-            if expected_stderr != stderr {
-                println!("{}\n", style("Mismatch: stderr").bold());
+                    let diff = TextDiff::configure()
+                        .algorithm(diff_algorithm)
+                        .diff_lines(expected_stderr, stderr);
 
-                let diff = TextDiff::configure()
-                    .algorithm(diff_algorithm)
-                    .diff_lines(expected_stderr, stderr);
+                    for change in diff.iter_all_changes() {
+                        let (sign, style_fn): (&str, Box<dyn Fn(&str) -> StyledObject<&str>>) =
+                            match change.tag() {
+                                ChangeTag::Delete => ("- |", Box::new(|s: &str| style(s).red())),
+                                ChangeTag::Insert => ("+ |", Box::new(|s: &str| style(s).green())),
+                                ChangeTag::Equal => (
+                                    &style("  |").dim().to_string(),
+                                    Box::new(|s: &str| style(s)),
+                                ),
+                            };
 
-                for change in diff.iter_all_changes() {
-                    let (sign, style_fn): (&str, Box<dyn Fn(&str) -> StyledObject<&str>>) =
-                        match change.tag() {
-                            ChangeTag::Delete => ("- |", Box::new(|s: &str| style(s).red())),
-                            ChangeTag::Insert => ("+ |", Box::new(|s: &str| style(s).green())),
-                            ChangeTag::Equal => (
-                                &style("  |").dim().to_string(),
-                                Box::new(|s: &str| style(s)),
-                            ),
-                        };
+                        print!("{}{}", style_fn(sign), style_fn(change.value_ref()));
+                    }
 
-                    print!("{}{}", style_fn(sign), style_fn(change.value_ref()));
+                    println!("");
                 }
 
-                println!("");
+                assert!(
+                    expected_exit_code == code,
+                    "exit code: Expected: {expected_exit_code} but got: {code}"
+                );
             }
-
-            assert!(
-                expected_exit_code == code,
-                "exit code: Expected: {expected_exit_code} but got: {code}"
-            );
-
-            exit(0);
-        }
-        Err(e) => {
-            eprintln!("Error running '{cmd}': {e}");
-            exit(1);
+            Err(e) => {
+                eprintln!("Error running '{cmd}': {e}");
+            }
         }
     }
+
+    Ok(())
 }

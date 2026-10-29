@@ -5,10 +5,10 @@ specmd help test
 ```stdout
 Run a command and output a specmd file
 
-Usage: specmd-test [OPTIONS] <PATH>
+Usage: specmd-test [OPTIONS] [PATH]...
 
 Arguments:
-  <PATH>
+  [PATH]...
           
 
 Options:

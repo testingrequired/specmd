@@ -6,7 +6,7 @@ specmd help parse
 Usage: specmd-parse <PATH>
 
 Arguments:
-  <PATH>
+  <PATH>  
 
 Options:
   -h, --help     Print help
@@ -21,3 +21,4 @@ Options:
 ```exit
 0
 ```
+

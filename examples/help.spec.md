@@ -3,7 +3,7 @@ specmd help
 ```
 
 ```stdout
-Markdown for testing CLI commands!
+CLI tests using markdown
 
 Usage: specmd <COMMAND>
 
@@ -14,7 +14,7 @@ Options:
 ```
 
 ```stderr
-Whoops
+
 ```
 
 ```exit

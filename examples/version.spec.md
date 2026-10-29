@@ -4,6 +4,7 @@ specmd --version
 
 ```stdout
 specmd 0.1.0
+
 ```
 
 ```stderr
