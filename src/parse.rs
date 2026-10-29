@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    CutBlockKind,
-    errors::{CutError, CutErrorKind, CutResult, ParseError},
+    SpecMdBlockKind,
+    errors::{ParseError, SpecMdError, SpecMdErrorKind, SpecMdResult},
     md::{extract_codeblocks, extract_frontmatter},
     span::{NO_SPAN, Span},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ParsedCutFile {
+pub struct ParsedSpecMdFile {
     pub frontmatter: Option<Span>,
     pub shell: Span,
     pub stdout: Span,
@@ -18,35 +18,35 @@ pub struct ParsedCutFile {
     pub stdin: Option<Span>,
 }
 
-fn get_block(source: &str, kind: CutBlockKind) -> CutResult<Span> {
+fn get_block(source: &str, kind: SpecMdBlockKind) -> SpecMdResult<Span> {
     match get_optional_block(source, kind.clone())? {
         Some(span) => Ok(span),
-        None => Err(CutError {
-            kind: CutErrorKind::ParseError(ParseError::RequiredBlockMissing(kind)),
+        None => Err(SpecMdError {
+            kind: SpecMdErrorKind::ParseError(ParseError::RequiredBlockMissing(kind)),
             span: NO_SPAN,
         }),
     }
 }
 
-fn get_optional_block(source: &str, kind: CutBlockKind) -> CutResult<Option<Span>> {
+fn get_optional_block(source: &str, kind: SpecMdBlockKind) -> SpecMdResult<Option<Span>> {
     let blocks = extract_codeblocks(source, kind.to_string());
 
-    let mut errs: Vec<CutError> = vec![];
+    let mut errs: Vec<SpecMdError> = vec![];
 
     if blocks.is_empty() {
         return Ok(None);
     } else if blocks.len() > 1 {
         for (_, span) in blocks.iter().skip(1) {
-            errs.push(CutError {
-                kind: CutErrorKind::ParseError(ParseError::TooManyOfBlock(kind.clone())),
+            errs.push(SpecMdError {
+                kind: SpecMdErrorKind::ParseError(ParseError::TooManyOfBlock(kind.clone())),
                 span: span.clone(),
             });
         }
     }
 
     if !errs.is_empty() {
-        return Err(CutError {
-            kind: CutErrorKind::Aggregate(errs),
+        return Err(SpecMdError {
+            kind: SpecMdErrorKind::Aggregate(errs),
             span: NO_SPAN,
         });
     }
@@ -56,14 +56,14 @@ fn get_optional_block(source: &str, kind: CutBlockKind) -> CutResult<Option<Span
     Ok(Some(span.clone()))
 }
 
-pub fn parse(source: &str) -> CutResult<ParsedCutFile> {
-    let mut errs: Vec<CutError> = vec![];
+pub fn parse(source: &str) -> SpecMdResult<ParsedSpecMdFile> {
+    let mut errs: Vec<SpecMdError> = vec![];
 
     let frontmatter = extract_frontmatter(source).map(|x| x.1);
 
     // Required
 
-    let shell = match get_block(source, CutBlockKind::Shell) {
+    let shell = match get_block(source, SpecMdBlockKind::Shell) {
         Ok(span) => span,
         Err(err) => {
             errs.push(err);
@@ -71,7 +71,7 @@ pub fn parse(source: &str) -> CutResult<ParsedCutFile> {
         }
     };
 
-    let stdout = match get_block(source, CutBlockKind::Stdout) {
+    let stdout = match get_block(source, SpecMdBlockKind::Stdout) {
         Ok(span) => span,
         Err(err) => {
             errs.push(err);
@@ -79,7 +79,7 @@ pub fn parse(source: &str) -> CutResult<ParsedCutFile> {
         }
     };
 
-    let stderr = match get_block(source, CutBlockKind::Stderr) {
+    let stderr = match get_block(source, SpecMdBlockKind::Stderr) {
         Ok(span) => span,
         Err(err) => {
             errs.push(err);
@@ -87,7 +87,7 @@ pub fn parse(source: &str) -> CutResult<ParsedCutFile> {
         }
     };
 
-    let exit = match get_block(source, CutBlockKind::Exit) {
+    let exit = match get_block(source, SpecMdBlockKind::Exit) {
         Ok(span) => span,
         Err(err) => {
             errs.push(err);
@@ -97,7 +97,7 @@ pub fn parse(source: &str) -> CutResult<ParsedCutFile> {
 
     // Optional
 
-    let env = match get_optional_block(source, CutBlockKind::Env) {
+    let env = match get_optional_block(source, SpecMdBlockKind::Env) {
         Ok(span) => span,
         Err(err) => {
             errs.push(err);
@@ -105,7 +105,7 @@ pub fn parse(source: &str) -> CutResult<ParsedCutFile> {
         }
     };
 
-    let stdin = match get_optional_block(source, CutBlockKind::Stdin) {
+    let stdin = match get_optional_block(source, SpecMdBlockKind::Stdin) {
         Ok(span) => span,
         Err(err) => {
             errs.push(err);
@@ -114,13 +114,13 @@ pub fn parse(source: &str) -> CutResult<ParsedCutFile> {
     };
 
     if !errs.is_empty() {
-        return Err(CutError {
-            kind: CutErrorKind::Aggregate(errs),
+        return Err(SpecMdError {
+            kind: SpecMdErrorKind::Aggregate(errs),
             span: NO_SPAN,
         });
     }
 
-    Ok(ParsedCutFile {
+    Ok(ParsedSpecMdFile {
         frontmatter,
         shell,
         stdout,

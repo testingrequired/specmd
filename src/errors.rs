@@ -1,42 +1,42 @@
 use std::{error::Error, fmt::Display};
 
-use crate::{CutBlockKind, span::Span};
+use crate::{SpecMdBlockKind, span::Span};
 
-pub type CutResult<T> = Result<T, CutError>;
+pub type SpecMdResult<T> = Result<T, SpecMdError>;
 
 #[derive(Debug)]
 pub enum ParseError {
-    RequiredBlockMissing(CutBlockKind),
-    TooManyOfBlock(CutBlockKind),
+    RequiredBlockMissing(SpecMdBlockKind),
+    TooManyOfBlock(SpecMdBlockKind),
 }
 
 #[derive(Debug)]
-pub enum CutErrorKind {
+pub enum SpecMdErrorKind {
     ParseError(ParseError),
-    Aggregate(Vec<CutError>),
+    Aggregate(Vec<SpecMdError>),
 }
 
 #[derive(Debug)]
-pub struct CutError {
-    pub kind: CutErrorKind,
+pub struct SpecMdError {
+    pub kind: SpecMdErrorKind,
     pub span: Span,
 }
 
-impl CutError {
+impl SpecMdError {
     // Is this error an aggregate of other errors?
     pub fn is_aggregate(self) -> bool {
-        matches!(self.kind, CutErrorKind::Aggregate(_))
+        matches!(self.kind, SpecMdErrorKind::Aggregate(_))
     }
 
-    pub fn aggregated_errors(&self) -> Option<&Vec<CutError>> {
+    pub fn aggregated_errors(&self) -> Option<&Vec<SpecMdError>> {
         match &self.kind {
-            CutErrorKind::Aggregate(cut_errors) => Some(cut_errors),
+            SpecMdErrorKind::Aggregate(errs) => Some(errs),
             _ => None,
         }
     }
 }
 
-impl Error for CutError {
+impl Error for SpecMdError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
     }
@@ -50,7 +50,7 @@ impl Error for CutError {
     }
 }
 
-impl Display for CutError {
+impl Display for SpecMdError {
     fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
     }

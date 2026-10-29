@@ -1,7 +1,7 @@
 use clap::Parser;
 use console::{StyledObject, style};
 use similar::{Algorithm, ChangeTag, TextDiff};
-use specmd::prelude::{CutResult, parse};
+use specmd::prelude::{SpecMdResult, parse};
 use std::process::{Command, exit};
 
 #[derive(Parser)]
@@ -13,26 +13,26 @@ struct Cli {
     path: String,
 }
 
-fn main() -> CutResult<()> {
+fn main() -> SpecMdResult<()> {
     let diff_algorithm = Algorithm::Myers;
 
     let cli = Cli::parse();
     let shell = cli.shell.unwrap_or(String::from("/bin/sh"));
     let content = std::fs::read_to_string(&cli.path).expect("should open file path passed");
 
-    let parsed_cut_file = parse(&content)?;
+    let specmd_file = parse(&content)?;
 
-    let cmd = &content[parsed_cut_file.shell];
-    let expected_stdout = &content[parsed_cut_file.stdout];
-    let expected_stderr = &content[parsed_cut_file.stderr];
-    let expected_exit = &content[parsed_cut_file.exit];
+    let cmd = &content[specmd_file.shell];
+    let expected_stdout = &content[specmd_file.stdout];
+    let expected_stderr = &content[specmd_file.stderr];
+    let expected_exit = &content[specmd_file.exit];
     let expected_exit_code = i32::from_str_radix(expected_exit, 10).expect("should parse as i32");
 
     eprintln!("{}\n\n{}\n", style(cli.path).underlined(), style(cmd).dim());
 
     let mut vars: Vec<(String, String)> = vec![];
 
-    if let Some(env) = parsed_cut_file.env {
+    if let Some(env) = specmd_file.env {
         let env_text = &content[env];
 
         vars = dotenvy::from_read_iter(env_text.as_bytes())

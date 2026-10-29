@@ -5,7 +5,7 @@ use std::process::{self, Command as Cmd};
 
 fn main() {
     let mut cli = Command::new("specmd")
-        .about("Markdown for testing CLI commands")
+        .about("CLI tests using markdown")
         .version(crate_version!())
         .subcommand_required(true)
         .arg_required_else_help(true)
