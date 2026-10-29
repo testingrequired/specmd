@@ -9,13 +9,13 @@ use crate::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ParsedCutFile {
-    frontmatter: Option<Span>,
-    shell: Span,
-    stdout: Span,
-    stderr: Span,
-    exit: Span,
-    env: Option<Span>,
-    stdin: Option<Span>,
+    pub frontmatter: Option<Span>,
+    pub shell: Span,
+    pub stdout: Span,
+    pub stderr: Span,
+    pub exit: Span,
+    pub env: Option<Span>,
+    pub stdin: Option<Span>,
 }
 
 fn get_block(source: &str, kind: CutBlockKind) -> CutResult<Span> {

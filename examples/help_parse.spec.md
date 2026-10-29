@@ -1,4 +1,4 @@
-```shell /bin/sh
+```shell
 specmd help parse
 ```
 
@@ -11,6 +11,7 @@ Arguments:
 Options:
   -h, --help     Print help
   -V, --version  Print version
+
 ```
 
 ```stderr

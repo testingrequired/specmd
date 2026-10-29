@@ -1,4 +1,4 @@
-```shell /bin/sh
+```shell
 specmd help new
 ```
 
@@ -9,11 +9,11 @@ Usage: specmd-new [OPTIONS] <CMD>...
 
 Arguments:
   <CMD>...
-          
+
 
 Options:
   -s, --shell <SHELL>
-          
+
 
   -h, --help
           Print help (see a summary with '-h')
@@ -23,9 +23,9 @@ Options:
 ```
 
 ```stderr
+
 ```
 
 ```exit
 0
 ```
-

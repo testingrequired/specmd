@@ -1,4 +1,4 @@
-```shell /bin/sh
+```shell
 specmd --version
 ```
 
@@ -7,9 +7,9 @@ specmd 0.1.0
 ```
 
 ```stderr
+
 ```
 
 ```exit
 0
 ```
-

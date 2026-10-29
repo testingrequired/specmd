@@ -25,9 +25,9 @@ fn main() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let code = output.status.code().unwrap_or(1);
 
-            println!("```shell {shell}\n{cmd}\n```\n");
-            println!("```stdout\n{stdout}```\n");
-            println!("```stderr\n{stderr}```\n");
+            println!("```shell\n{cmd}\n```\n");
+            println!("```stdout\n{stdout}\n```\n");
+            println!("```stderr\n{stderr}\n```\n");
             println!("```exit\n{code}\n```\n");
 
             exit(code);

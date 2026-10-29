@@ -1,6 +1,41 @@
-# cmdtest.md
+# specmd
 
-Markdown for testing CLI commands.
+CLI tests using markdown.
+
+## Usage
+
+Prepend `specmd new` in front of a command to generate a spec markdown file recording the results.
+
+```sh
+specmd new echo 'Hello' > hello.spec.md
+```
+
+Creates `hello.spec.md`:
+
+````md
+```shell
+echo Hello
+```
+
+```stdout
+Hello
+
+```
+
+```stderr
+
+```
+
+```exit
+0
+```
+````
+
+You can then test it:
+
+```sh
+specmd test hello.spec.md
+```
 
 ## How Does It Work?
 

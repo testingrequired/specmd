@@ -8,11 +8,12 @@ NAME=World
 ```
 
 ```shell
-echo 'Hello ${NAME}'
+echo "Hello $NAME"
 ```
 
 ```stdout
 Hello World
+
 ```
 
 ```stderr

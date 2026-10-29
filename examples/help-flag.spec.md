@@ -1,4 +1,4 @@
-```shell /bin/sh
+```shell
 specmd --help
 ```
 
@@ -8,13 +8,15 @@ Markdown for testing CLI commands
 Usage: specmd <COMMAND>
 
 Options:
-  -h, --help  Print help
+  -h, --help     Print help
+  -V, --version  Print version
+
 ```
 
 ```stderr
+
 ```
 
 ```exit
 0
 ```
-
